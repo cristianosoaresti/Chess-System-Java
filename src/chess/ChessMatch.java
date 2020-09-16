@@ -2,6 +2,7 @@ package chess;
 
 import boardgame.Board;
 import boardgame.Position;
+import boardgame.exception.BoardException;
 import chess.pieces.King;
 import chess.pieces.Rook;
 
@@ -14,7 +15,7 @@ public class ChessMatch {
 		initialSetup();
 	}
 
-	public ChessPiece[][] getPieces(){
+	public ChessPiece[][] getPieces() {
 		ChessPiece[][] mat = new ChessPiece[board.getRows()][board.getColumns()];
 		for(int i = 0; i < board.getRows(); i++) {
 			for(int j = 0; j < board.getColumns(); j++) {
@@ -24,7 +25,7 @@ public class ChessMatch {
 		return mat;
 	}
 
-	private void initialSetup () {
+	private void initialSetup () throws BoardException {
 		board.placePiece(new King(board, Color.WHITE), new Position(1,2));
 		board.placePiece(new Rook(board, Color.BLACK), new Position(7,0));
 	}
