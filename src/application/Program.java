@@ -29,17 +29,13 @@ public class Program {
 				System.out.print("Target: ");
 				ChessPosition target = UI.readChessPosition(sc);
 
-				ChessPiece capturePiece = chessMatch.performChessMove(source, target);
+				ChessPiece capturedPiece = chessMatch.performChessMove(source, target);
 
 			} catch (ChessException e) {
 				System.out.println(e.getMessage());
 				System.out.println("Press Enter");
 				sc.nextLine();
 			} catch (InputMismatchException e) {
-				System.out.println(e.getMessage());
-				System.out.println("Press Enter");
-				sc.nextLine();
-			} catch (BoardException e) {
 				System.out.println(e.getMessage());
 				System.out.println("Press Enter");
 				sc.nextLine();

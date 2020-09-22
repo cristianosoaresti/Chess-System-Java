@@ -4,8 +4,8 @@ import boardgame.exception.BoardException;
 
 public class Board {
 
-	private int rows = 0;
-	private int columns = 0;
+	private int rows;
+	private int columns;
 	private Piece[][] pieces;
 
 	public Board(int rows, int columns) {
@@ -41,13 +41,16 @@ public class Board {
 
 	public void placePiece(Piece piece, Position position) {
 		if (thereIsAPiece(position)) {
-			throw new BoardException("There is aldeary a piece on this position (" + position + ")");
+			throw new BoardException("There is alreary a piece on this position (" + position + ")");
 		}
 		pieces[position.getRow()][position.getColumn()] = piece;
 		piece.position = position;
 	}
 
 	public Piece removePiece(Position position) {
+		if (!positionExists(position)) {
+			throw new BoardException("Position not on the board");
+		}
 		if (piece(position) == null) {
 			return null;
 		}
@@ -58,7 +61,7 @@ public class Board {
 	}
 
 	private boolean positionExists(int row, int column) {
-		return (row >= 0 && row <= rows) && (column >= 0 && column <= columns);
+		return row >= 0 && row < rows && column >= 0 && column < columns;
 	}
 
 	public boolean positionExists(Position position) {
