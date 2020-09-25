@@ -19,6 +19,7 @@ public class ChessMatch {
 	private List<Piece> piecesOnTheBoard = new ArrayList<>();
 	private List<Piece> capturedPieces = new ArrayList<>();
 	private boolean check;
+	private boolean checkMate;
 
 	public ChessMatch() {
 		board = new Board(8, 8);
@@ -35,9 +36,13 @@ public class ChessMatch {
 	public Color getCurrentPlayer() {
 		return currentPlayer;
 	}
-	
+
 	public boolean getCheck() {
 		return check;
+	}
+
+	public boolean getCheckMate() {
+		return checkMate;
 	}
 
 	private void nextTurn() {
@@ -69,15 +74,21 @@ public class ChessMatch {
 		validateSourcePosition(source);
 		validateTargetPosition(source, target);
 		Piece capturedPiece = makeMove(source, target);
-		
+
 		if (testCheck(currentPlayer)) {
 			undoMove(source, target, capturedPiece);
 			throw new ChessException("You can not put yourself in check!");
 		}
-		
-		check = (testCheck(opponent(currentPlayer))) ? true : false ;
-		
-		nextTurn();
+
+		check = (testCheck(opponent(currentPlayer))) ? true : false;
+
+		// if the movement from the current player put the king opponent in a place that
+		// it can not move, so it is check mate
+		if (testCheckMate(opponent(currentPlayer))) {
+			checkMate = true;
+		} else {
+			nextTurn();
+		}
 		return (ChessPiece) capturedPiece;
 	}
 
@@ -136,19 +147,20 @@ public class ChessMatch {
 	private ChessPiece king(Color color) {
 		List<Piece> piecesOnTheGameTemp = piecesOnTheBoard.stream().filter(x -> ((ChessPiece) x).getColor() == color)
 				.collect(Collectors.toList());
-		
-		for(Piece p : piecesOnTheGameTemp) {
+
+		for (Piece p : piecesOnTheGameTemp) {
 			if (p instanceof King) {
-				return (ChessPiece)p;
+				return (ChessPiece) p;
 			}
 		}
 		throw new IllegalStateException("There is no " + color + " king on the board");
 	}
-	
-	private boolean testCheck (Color color) {
+
+	private boolean testCheck(Color color) {
 		Position kingPosition = king(color).getChessPosition().toPosition();
-		List<Piece> opponentPieces = piecesOnTheBoard.stream().filter(x -> ((ChessPiece) x).getColor() == opponent(color)).collect(Collectors.toList());
-		for(Piece p : opponentPieces) {
+		List<Piece> opponentPieces = piecesOnTheBoard.stream()
+				.filter(x -> ((ChessPiece) x).getColor() == opponent(color)).collect(Collectors.toList());
+		for (Piece p : opponentPieces) {
 			boolean[][] mat = p.possibleMoves();
 			if (mat[kingPosition.getRow()][kingPosition.getColumn()]) {
 				return true;
@@ -157,19 +169,54 @@ public class ChessMatch {
 		return false;
 	}
 
-	private void initialSetup() {
-		placeNewPiece('c', 1, new Rook(board, Color.WHITE));
-		placeNewPiece('c', 2, new Rook(board, Color.WHITE));
-		placeNewPiece('d', 2, new Rook(board, Color.WHITE));
-		placeNewPiece('e', 2, new Rook(board, Color.WHITE));
-		placeNewPiece('e', 1, new Rook(board, Color.WHITE));
-		placeNewPiece('d', 1, new King(board, Color.WHITE));
+	private boolean testCheckMate(Color color) {
+		// firstly we need to check if it is in check
+		if (!testCheck(color)) {
+			return false;
+		}
+		// separate pieces from the same color
+		List<Piece> list = piecesOnTheBoard.stream().filter(x -> ((ChessPiece) x).getColor() == color)
+				.collect(Collectors.toList());
+		// for it piece, check if there is any movement that can save the king and stop
+		// the check
+		for (Piece piece : list) {
+			// get each possible move from this piece
+			boolean[][] mat = piece.possibleMoves();
+			// for it position from the board, it must check if there is a possible movement
+			// for the piece
+			for (int i = 0; i < board.getRows(); i++) {
+				for (int j = 0; j < board.getColumns(); j++) {
+					// if the piece can move to this position
+					if (mat[i][j]) {
+						// then it must see if this movement can save the king and cancel the check
+						// getting the original position
+						Position source = ((ChessPiece) piece).getChessPosition().toPosition();
+						// getting the target position
+						Position target = new Position(i, j);
+						// making a "fake" move, so after it can check if the movement can save the king
+						Piece capturedPiece = makeMove(source, target);
+						// test to see if the movement above saved the king
+						boolean testCheck = testCheck(color);
+						// undo the movement
+						undoMove(source, target, capturedPiece);
+						// if the movement saved the king, so the game is not on check mate
+						if (!testCheck) {
+							return false;
+						}
+					}
+				}
+			}
+		}
+		// otherwise the game is on check mate
+		return true;
+	}
 
-		placeNewPiece('c', 7, new Rook(board, Color.BLACK));
-		placeNewPiece('c', 8, new Rook(board, Color.BLACK));
-		placeNewPiece('d', 7, new Rook(board, Color.BLACK));
-		placeNewPiece('e', 7, new Rook(board, Color.BLACK));
-		placeNewPiece('e', 8, new Rook(board, Color.BLACK));
-		placeNewPiece('d', 8, new King(board, Color.BLACK));
+	private void initialSetup() {
+		placeNewPiece('h', 7, new Rook(board, Color.WHITE));
+		placeNewPiece('d', 1, new Rook(board, Color.WHITE));
+		placeNewPiece('e', 1, new King(board, Color.WHITE));
+
+		placeNewPiece('b', 8, new Rook(board, Color.BLACK));
+		placeNewPiece('a', 8, new King(board, Color.BLACK));
 	}
 }

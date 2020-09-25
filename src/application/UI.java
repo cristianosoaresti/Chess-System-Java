@@ -68,10 +68,19 @@ public class UI {
 		printCapturedPieces(captured);
 		System.out.println();
 		System.out.println("Turn: " + chessMatch.getTurn());
-		System.out.println("Waiting playes: " + chessMatch.getCurrentPlayer());
-		
-		if (chessMatch.getCheck()) {
-			System.out.println("CHECK!");
+
+		if (!chessMatch.getCheckMate()) {
+			System.out.println("Waiting playes: " + chessMatch.getCurrentPlayer());
+
+			if (chessMatch.getCheck()) {
+				System.out.println("CHECK!");
+			}
+		} else {
+			System.out.print(ANSI_GREEN_BACKGROUND);
+			System.out.println(ANSI_BLACK);
+			System.out.println("CHECKMATE");
+			System.out.println("Winner is the player " + chessMatch.getCurrentPlayer());
+			System.out.print("-" + ANSI_RESET);
 		}
 	}
 
@@ -105,17 +114,19 @@ public class UI {
 	private static void printCapturedPieces(List<ChessPiece> chessPiece) {
 		// Given the List we are applying a filter to separate white and black pieces
 		// ------------------------------------ Using lambda resource
-		List<ChessPiece> white = chessPiece.stream().filter(x -> x.getColor() == Color.WHITE).collect(Collectors.toList());
-		List<ChessPiece> black = chessPiece.stream().filter(x -> x.getColor() == Color.BLACK).collect(Collectors.toList());
+		List<ChessPiece> white = chessPiece.stream().filter(x -> x.getColor() == Color.WHITE)
+				.collect(Collectors.toList());
+		List<ChessPiece> black = chessPiece.stream().filter(x -> x.getColor() == Color.BLACK)
+				.collect(Collectors.toList());
 		System.out.println("Captured pieces:");
 		System.out.print("White: ");
 		System.out.print(ANSI_WHITE);
-		//---------------- Resource use to sweep the list and print all the items 
+		// ---------------- Resource use to sweep the list and print all the items
 		System.out.println(Arrays.toString(white.toArray()));
 		System.out.print(ANSI_RESET);
 		System.out.print(ANSI_YELLOW);
 		System.out.print("Black: ");
-		//---------------- Resource use to sweep the list and print all the items
+		// ---------------- Resource use to sweep the list and print all the items
 		System.out.println(Arrays.toString(black.toArray()));
 		System.out.print(ANSI_RESET);
 	}
